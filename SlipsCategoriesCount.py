@@ -1,4 +1,5 @@
 from elasticsearch import Elasticsearch
+import matplotlib.pyplot as plt
 
 # Elasticsearch connection
 es5 = Elasticsearch(
@@ -35,6 +36,8 @@ response = es5.search(index=index_name, body=agg_query)
 
 # Extract and print category counts and first record example
 categories = response['aggregations']['category_count']['buckets']
+categoryNames = []
+counts = []
 for category in categories:
     category_name = category['key']
     category_count = category['doc_count']
@@ -48,3 +51,21 @@ for category in categories:
         attach_content = 'No description available'
     
     print(f"Category: {category_name}, Count: {category_count}, Example Alert Description: {attach_content}")
+    categoryNames.append(category_name)
+    counts.append(category_count)
+
+plt.figure(figsize=(13,10))
+bars = plt.bar(categoryNames, counts, color=['blue', 'green', 'orange', 'red'])
+
+# Adding counts on top of bars
+for bar in bars:
+    yval = bar.get_height()
+    plt.text(bar.get_x() + bar.get_width()/2, yval + 500, int(yval), ha='center', va='bottom')
+
+# Title and labels
+plt.title('Distribution of All Slips Alerts Over Categories')
+plt.xlabel('Categories')
+plt.ylabel('Alerts Count')
+
+# Display the plot
+plt.show()
